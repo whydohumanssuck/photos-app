@@ -13,4 +13,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "photos-app"
 include(":app")
-project(":app").projectDir = file("../app")
+project(":app").projectDir = file("../../app")
