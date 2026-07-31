@@ -1183,7 +1183,7 @@ fun VideoPlayer(uri: Uri) {
         }
     }, modifier = Modifier
         .fillMaxWidth()
-        .weight(1f)
+        .fillMaxHeight()
     )
 }
 
