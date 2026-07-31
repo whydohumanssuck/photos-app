@@ -1,0 +1,12 @@
+// CI-only: pins dependency versions to versions that exist on Google Maven.
+// The project requests versions that are not published (material 1.11.1, lifecycle 2.7.2, exoplayer 2.20.0).
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy {
+            force "com.google.android.material:material:1.11.0"
+            force "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
+            force "androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"
+            force "com.google.android.exoplayer:exoplayer:2.19.1"
+        }
+    }
+}
