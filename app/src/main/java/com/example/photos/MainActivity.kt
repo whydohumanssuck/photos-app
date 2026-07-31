@@ -13,6 +13,8 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,8 +30,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +51,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 
 private val sourceOrder = listOf("Camera", "Downloads", "Pinterest", "Other")
@@ -148,11 +155,11 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
 
     val appColors = when (themeChoice) {
         ThemeChoice.Midnight -> lightColors(
-            primary = Color(0xFF64748B),
-            primaryVariant = Color(0xFF0F172A),
+            primary = Color(0xFF94A3B8),
+            primaryVariant = Color.Black,
             secondary = Color(0xFF82AAFF),
-            background = Color(0xFF050712),
-            surface = Color(0xFF111826),
+            background = Color.Black,
+            surface = Color(0xFF0B0B0D),
             onPrimary = Color.White,
             onSecondary = Color.White,
             onBackground = Color.White,
@@ -193,22 +200,42 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
         )
     }
 
-    MaterialTheme(colors = appColors) {
+    MaterialTheme(
+        colors = appColors,
+        shapes = Shapes(
+            small = RoundedCornerShape(12.dp),
+            medium = RoundedCornerShape(20.dp),
+            large = RoundedCornerShape(28.dp)
+        )
+    ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("Gallery") },
-                    backgroundColor = MaterialTheme.colors.primaryVariant,
-                    contentColor = MaterialTheme.colors.onPrimary,
-                    actions = {
-                        IconButton(onClick = { showSettingsDialog = true }) {
-                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                        .background(MaterialTheme.colors.primaryVariant)
+                ) {
+                    TopAppBar(
+                        title = { Text("Gallery") },
+                        backgroundColor = MaterialTheme.colors.primaryVariant,
+                        contentColor = MaterialTheme.colors.onPrimary,
+                        actions = {
+                            IconButton(onClick = { showSettingsDialog = true }) {
+                                Icon(Icons.Default.Settings, contentDescription = "Settings")
+                            }
                         }
-                    }
-                )
+                    )
+                }
             },
             bottomBar = {
-                BottomNavigation(backgroundColor = Color(0xFF111827)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                        .background(MaterialTheme.colors.surface)
+                ) {
+                BottomNavigation(backgroundColor = MaterialTheme.colors.surface, elevation = 0.dp) {
                     PhotosTab.values().forEach { tab ->
                         BottomNavigationItem(
                             icon = { Icon(tab.icon, contentDescription = tab.title) },
@@ -220,8 +247,9 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
                         )
                     }
                 }
+                }
             },
-            backgroundColor = Color(0xFF0F172A)
+            backgroundColor = MaterialTheme.colors.background
         ) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -236,6 +264,7 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Search by filename or album") },
                         singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             textColor = Color.White,
                             placeholderColor = Color(0x80FFFFFF),
@@ -300,6 +329,7 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
             if (showAlbumDialog) {
                 AlertDialog(
                     onDismissRequest = { showAlbumDialog = false },
+                    shape = RoundedCornerShape(28.dp),
                     title = { Text("Create album") },
                     text = {
                         OutlinedTextField(
@@ -324,6 +354,7 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
             if (showPhotoAddToAlbumDialog && selectedPhoto != null) {
                 AlertDialog(
                     onDismissRequest = { showPhotoAddToAlbumDialog = false },
+                    shape = RoundedCornerShape(28.dp),
                     title = { Text("Add to album") },
                     text = {
                         if (customAlbums.isEmpty()) {
@@ -374,6 +405,7 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
             if (showSettingsDialog) {
                 AlertDialog(
                     onDismissRequest = { showSettingsDialog = false },
+                    shape = RoundedCornerShape(28.dp),
                     title = { Text("App settings") },
                     text = {
                         Column(modifier = Modifier.fillMaxWidth()) {
@@ -427,6 +459,7 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
             if (showRenameAlbumDialog && editingAlbum != null) {
                 AlertDialog(
                     onDismissRequest = { showRenameAlbumDialog = false },
+                    shape = RoundedCornerShape(28.dp),
                     title = { Text("Rename album") },
                     text = {
                         OutlinedTextField(
@@ -458,6 +491,7 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
                         showAddToAlbumDialog = false
                         selectedAddToAlbum = null
                     },
+                    shape = RoundedCornerShape(28.dp),
                     title = { Text("Add selected to album") },
                     text = {
                         if (customAlbums.isEmpty()) {
@@ -515,7 +549,7 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp)
-                        .background(Color(0xFF111827), RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colors.surface, RoundedCornerShape(20.dp))
                         .padding(12.dp)
                 ) {
                     Column {
@@ -720,21 +754,32 @@ fun AlbumsScreen(
             }
             items(customAlbums.entries.toList()) { (albumName, items) ->
                 Card(
-                    shape = RoundedCornerShape(14.dp),
-                    backgroundColor = Color(0xFF111827),
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = MaterialTheme.colors.surface,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clickable { onAlbumSelected(albumName) }
                 ) {
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .background(Color(0xFF1E293B), RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(albumName.firstOrNull()?.toString().orEmpty(), color = Color.White, fontSize = 24.sp)
+                        if (albumCovers[albumName].isNullOrBlank()) {
+                            Box(
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .background(MaterialTheme.colors.surface, RoundedCornerShape(14.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(albumName.firstOrNull()?.toString().orEmpty(), color = Color.White, fontSize = 24.sp)
+                            }
+                        } else {
+                            AsyncImage(
+                                model = albumCovers[albumName],
+                                contentDescription = "$albumName cover",
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(RoundedCornerShape(14.dp)),
+                                contentScale = ContentScale.Crop
+                            )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
@@ -752,8 +797,8 @@ fun AlbumsScreen(
         groupedPhotos.forEach { (source, items) ->
             item {
                 Card(
-                    shape = RoundedCornerShape(14.dp),
-                    backgroundColor = Color(0xFF111827),
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = MaterialTheme.colors.surface,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
@@ -764,7 +809,7 @@ fun AlbumsScreen(
                             Box(
                                 modifier = Modifier
                                     .size(72.dp)
-                                    .background(Color(0xFF1E293B), RoundedCornerShape(12.dp)),
+                                    .background(MaterialTheme.colors.surface, RoundedCornerShape(14.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(source.first().toString(), color = Color.White, fontSize = 24.sp)
@@ -775,7 +820,7 @@ fun AlbumsScreen(
                                 contentDescription = "$source cover",
                                 modifier = Modifier
                                     .size(72.dp)
-                                    .background(Color.Black, RoundedCornerShape(12.dp)),
+                                    .clip(RoundedCornerShape(14.dp)),
                                 contentScale = ContentScale.Crop
                             )
                         }
@@ -873,7 +918,7 @@ fun AlbumDetailOverlay(
         contentAlignment = Alignment.Center
     ) {
         Card(
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(24.dp),
             modifier = Modifier
                 .fillMaxWidth(0.94f)
                 .fillMaxHeight(0.9f)
@@ -952,14 +997,15 @@ fun AlbumHeader(source: String, count: Int, coverUri: String?, onChangeCover: ()
                 contentDescription = "$source cover",
                 modifier = Modifier
                     .size(64.dp)
-                    .padding(end = 8.dp),
+                    .padding(end = 8.dp)
+                    .clip(RoundedCornerShape(14.dp)),
                 contentScale = ContentScale.Crop
             )
         } else {
             Box(
                 modifier = Modifier
                     .size(64.dp)
-                    .background(Color(0xFF1E293B), RoundedCornerShape(12.dp)),
+                    .background(MaterialTheme.colors.surface, RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(source.first().toString(), color = Color.White, fontSize = 20.sp)
@@ -979,6 +1025,7 @@ fun AlbumHeader(source: String, count: Int, coverUri: String?, onChangeCover: ()
 fun AlbumCoverPicker(source: String, items: List<PhotoItem>, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(28.dp),
         title = { Text("Choose cover for $source") },
         text = {
             LazyVerticalGrid(
@@ -1016,7 +1063,7 @@ fun AlbumCoverPicker(source: String, items: List<PhotoItem>, onSelect: (String) 
 fun PhotoCard(photo: PhotoItem, isFavorite: Boolean, selected: Boolean = false, onToggleFavorite: () -> Unit, onClick: () -> Unit, onLongPress: () -> Unit) {
     Card(
         shape = RoundedCornerShape(18.dp),
-        backgroundColor = if (selected) Color(0xFF1E40AF) else Color(0xFF111827),
+        backgroundColor = if (selected) Color(0xFF1E40AF) else MaterialTheme.colors.surface,
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onClick, onLongClick = onLongPress)
@@ -1097,7 +1144,7 @@ fun PhotoViewer(
         contentAlignment = Alignment.Center
     ) {
         Card(
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(24.dp),
             modifier = Modifier
                 .fillMaxWidth(0.92f)
                 .fillMaxHeight(0.92f)
@@ -1127,17 +1174,47 @@ fun PhotoViewer(
                         Icon(Icons.Default.Share, contentDescription = "Share")
                     }
                 }
+                var zoom by remember { mutableStateOf(1f) }
+                var zoomOffset by remember { mutableStateOf(Offset.Zero) }
                 if (photo.isVideo) {
                     VideoPlayer(uri = photo.uri)
                 } else {
-                    AsyncImage(
-                        model = photo.uri,
-                        contentDescription = photo.name,
-                        contentScale = ContentScale.Fit,
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                    )
+                            .clipToBounds()
+                    ) {
+                        AsyncImage(
+                            model = photo.uri,
+                            contentDescription = photo.name,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer(
+                                    scaleX = zoom,
+                                    scaleY = zoom,
+                                    translationX = zoomOffset.x,
+                                    translationY = zoomOffset.y
+                                )
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onDoubleTap = {
+                                        zoom = if (zoom > 1f) 1f else 2.5f
+                                        zoomOffset = Offset.Zero
+                                    })
+                                }
+                                .pointerInput(Unit) {
+                                    detectTransformGestures { _, pan, gestureZoom, _ ->
+                                        zoom = (zoom * gestureZoom).coerceIn(1f, 5f)
+                                        if (zoom > 1f) {
+                                            zoomOffset += pan
+                                        } else {
+                                            zoomOffset = Offset.Zero
+                                        }
+                                    }
+                                }
+                        )
+                    }
                 }
                 Column(modifier = Modifier.padding(16.dp)) {
                     val displayDate = if (photo.dateTaken > 0L) photo.dateTaken else photo.dateAdded
