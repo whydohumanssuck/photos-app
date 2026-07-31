@@ -10,3 +10,13 @@ allprojects {
         }
     }
 }
+
+// CI-only: the project calls collectAsStateWithLifecycle but never declares
+// lifecycle-runtime-compose; supply it without touching the app module.
+allprojects {
+    afterEvaluate { p ->
+        if (p.plugins.hasPlugin("com.android.application")) {
+            p.dependencies.add("implementation", "androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+        }
+    }
+}
