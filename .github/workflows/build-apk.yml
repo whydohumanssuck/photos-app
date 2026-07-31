@@ -23,7 +23,7 @@ jobs:
           gradle-version: '8.6'
 
       - name: Build debug APK
-        run: gradle assembleDebug --init-script .github/gradle-init.gradle
+        run: gradle -p .github/ci assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
