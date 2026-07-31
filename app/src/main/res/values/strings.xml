@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Photos</string>
+    <string name="action_add">Add</string>
+    <string name="hint_search">Search by filename</string>
+</resources>
