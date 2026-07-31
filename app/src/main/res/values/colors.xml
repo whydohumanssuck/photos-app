@@ -6,4 +6,10 @@
     <color name="teal_700">#018786</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+
+    <color name="emerald_bg">#2E7D32</color>
+    <color name="midnight_bg">#1A1A2E</color>
+    <color name="pink_bg">#EC407A</color>
+    <color name="purple_bg">#6C5CE7</color>
 </resources>
+
