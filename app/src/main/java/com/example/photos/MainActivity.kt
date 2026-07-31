@@ -14,7 +14,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -260,7 +262,7 @@ fun PhotosApp(viewModel: PhotoViewModel = viewModel()) {
                         }
                     )
                     PhotosTab.Albums -> AlbumsScreen(
-                        albumGroups = albumGroups,
+                        groupedPhotos = albumGroups,
                         albumCovers = albumCovers,
                         customAlbums = customAlbums,
                         onAlbumSelected = { activeAlbum = it },
@@ -1010,6 +1012,7 @@ fun AlbumCoverPicker(source: String, items: List<PhotoItem>, onSelect: (String) 
 }
 
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun PhotoCard(photo: PhotoItem, isFavorite: Boolean, selected: Boolean = false, onToggleFavorite: () -> Unit, onClick: () -> Unit, onLongPress: () -> Unit) {
     Card(
         shape = RoundedCornerShape(18.dp),
